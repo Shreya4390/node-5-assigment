@@ -21,8 +21,3 @@ export async function authentication(req, res, next) {
 
 };
 
-
-// export async function requestTime(req, res, next) {
-//   req.requestTime = Date.now()
-//   return next();
-// }

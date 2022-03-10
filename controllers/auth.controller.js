@@ -8,7 +8,7 @@ exports.setfiledata = (req, res) => {
     fs.readFile('./db.json', function (err, data) {
         if (Object.entries(data).length === 0) {
             fs.appendFile('./db.json', JSON.stringify(append_data), 'utf8',
-                function (err, data) {
+                function (err) {
                     if (err) {
                         res.send({ status: 400, msg: err });
                     } else {
@@ -58,7 +58,7 @@ exports.uploadFile = (req, res) => {
         return res.status(400).send('No files were uploaded.');
     }
 
-    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+    // The name of the input field (i.e. "Public") is used to retrieve the uploaded file
     sampleFile = req.files.file;
     uploadPath = __dirname + '/../public/images/' + randomKey + '_' + sampleFile.name;
 

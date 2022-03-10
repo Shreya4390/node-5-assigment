@@ -1,6 +1,6 @@
 import fs from 'fs';
 import randomKey from '../utils/index';
-import lodash from 'lodash';
+import lodash, { isEmpty } from 'lodash';
 
 
 exports.setfiledata = (req, res) => {
@@ -10,7 +10,7 @@ exports.setfiledata = (req, res) => {
             fs.appendFile('./db.json', JSON.stringify(append_data), 'utf8',
                 function (err, data) {
                     if (err) {
-                        res.send({ status: 400, msg: 'Something went wrong.' });
+                        res.send({ status: 400, msg: err });
                     } else {
                         res.send({ status: 200, msg: 'Data is appended to file successfully.' });
                     }
@@ -18,18 +18,19 @@ exports.setfiledata = (req, res) => {
         } else {
             const filedata = JSON.parse(data.toString());
             const empNewData = append_data.filter(({ id: id1 }) => !filedata.some(({ id: id2 }) => id2 === id1));
-            empNewData.map(item => {
-                const fsFileData = JSON.parse(fs.readFileSync('./db.json'));
-                fsFileData.push(item)
-                fs.writeFileSync('./db.json', JSON.stringify(fsFileData, null, 2), 'utf-8',
-                    function (err, data) {
-                        if (err) {
-                            res.send({ status: 400, msg: 'Something went wrong.' });
-                        } else {
-                            res.send({ status: 200, msg: 'Data is updated successfully.' });
-                        }
-                    });
-            });
+            if (isEmpty(empNewData)) {
+                res.send({ status: 400, msg: 'Data already exist' });
+            } else {
+                empNewData.map(item => {
+                    const fsFileData = JSON.parse(fs.readFileSync('./db.json'));
+                    fsFileData.push(item)
+                    fs.writeFileSync('./db.json', JSON.stringify(fsFileData, null, 2), 'utf8',
+                        function (err) {
+                            if (err) res.send({ status: 400, msg: err });
+                        });
+                    res.send({ status: 200, msg: 'Data is appended to file successfully.' });
+                });
+            }
         }
     });
 }

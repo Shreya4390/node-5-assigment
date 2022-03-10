@@ -1,27 +1,51 @@
 import fs from 'fs';
-import randomKey from '../utils/index'
+import randomKey from '../utils/index';
+import lodash from 'lodash';
 
 
 exports.setfiledata = (req, res) => {
     const append_data = req.body.employees;
-    fs.appendFile('./db.json', JSON.stringify(append_data), 'utf8',
-        function (err) {
-            if (err) {
-                res.send({ status: 400, msg: 'Something went wrong.' });
-            } else {
-                res.send({ status: 200, msg: 'Data is appended to file successfully.' });
-            }
-        });
+    fs.readFile('./db.json', function (err, data) {
+        if (Object.entries(data).length === 0) {
+            fs.appendFile('./db.json', JSON.stringify(append_data), 'utf8',
+                function (err, data) {
+                    if (err) {
+                        res.send({ status: 400, msg: 'Something went wrong.' });
+                    } else {
+                        res.send({ status: 200, msg: 'Data is appended to file successfully.' });
+                    }
+                });
+        } else {
+            const filedata = JSON.parse(data.toString());
+            const empNewData = append_data.filter(({ id: id1 }) => !filedata.some(({ id: id2 }) => id2 === id1));
+            empNewData.map(item => {
+                const fsFileData = JSON.parse(fs.readFileSync('./db.json'));
+                fsFileData.push(item)
+                fs.writeFileSync('./db.json', JSON.stringify(fsFileData, null, 2), 'utf-8',
+                    function (err, data) {
+                        if (err) {
+                            res.send({ status: 400, msg: 'Something went wrong.' });
+                        } else {
+                            res.send({ status: 200, msg: 'Data is updated successfully.' });
+                        }
+                    });
+            });
+        }
+    });
 }
 
 exports.getfiledata = (req, res) => {
     fs.readFile('./db.json', function (err, data) {
-        if (err) {
-            res.send({ status: 400, msg: 'Something went wrong.' });
+        if (Object.entries(data).length === 0) {
+            res.send({ status: 400, msg: 'Data not found.' });
         } else {
-            res.send({
-                status: 200, data: JSON.parse(data.toString()), msg: `File read Successfully. The total processing time of the call is ${Date.now() - req.session.login} miliseconds`
-            });
+            if (err) {
+                res.send({ status: 400, msg: 'Something went wrong.' });
+            } else {
+                res.send({
+                    status: 200, data: JSON.parse(data.toString()), msg: `File read Successfully. The total processing time of the call is ${Date.now() - req.session.login} miliseconds`
+                });
+            }
         }
     });
 }

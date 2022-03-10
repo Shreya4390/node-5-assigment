@@ -7,7 +7,6 @@ export async function authentication(req, res) {
     time: Date(),
   };
   const token = jwt.sign(data, jwtSecretKey);
-  console.log(token)
   res.send(token);
 };
 
